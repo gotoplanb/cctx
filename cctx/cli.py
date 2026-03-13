@@ -171,7 +171,7 @@ def add(path_or_url: str) -> None:
             name = Path(path).name
             new_repo = {"name": name, "path": path_or_url, "depth": "standard"}
 
-        if "repos" not in raw:
+        if not raw.get("repos"):
             raw["repos"] = []
 
         # Check for duplicate
