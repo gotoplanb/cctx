@@ -1,0 +1,15 @@
+output: CONTEXT.md
+global_context: |
+  These are the active projects in this workspace.
+
+repos:
+  # Local repos
+  # - name: my-project
+  #   path: ~/code/my-project
+  #   depth: standard        # readme | standard | full
+
+  # GitHub repos (public, no auth needed)
+  # - name: some-lib
+  #   github: owner/repo
+  #   depth: readme
+  #   ref: main
