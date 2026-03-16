@@ -57,9 +57,11 @@ Config location can be overridden with `CCTX_CONFIG` env var.
 
 | Level | What's harvested |
 |---|---|
-| `readme` | README.md only |
-| `standard` | README.md + CHANGELOG.md + `docs/**/*.md` (default) |
+| `readme` | README.md + CLAUDE.md |
+| `standard` | README.md + CLAUDE.md + CHANGELOG.md + `docs/**/*.md` (default) |
 | `full` | Everything in `standard` + Python docstrings from top-level modules |
+
+CLAUDE.md is harvested at all depth levels when present, from both local and GitHub repos.
 
 ## Commands
 
@@ -74,26 +76,28 @@ cctx add <path|url>    Add a repo to cctx.yaml
 
 ## Output
 
-`cctx harvest` writes a structured `CONTEXT.md` with three layers:
+`cctx harvest` writes a structured `CONTEXT.md` with these layers per repo:
 
-1. **Seed** — name, description, language, entry point per repo (200–400 tokens each)
-2. **Pointers** — file map of available deeper docs with one-line descriptions
-3. **Docstrings** — extracted Python docstrings (only when `depth: full`)
+1. **Seed** — name, description, language, entry point (200–400 tokens each)
+2. **CLAUDE.md** — full project instructions and conventions (when present)
+3. **Pointers** — file map of available deeper docs with one-line descriptions
+4. **Docstrings** — extracted Python docstrings (only when `depth: full`)
 
 Token count is estimated after each harvest. A warning is printed if output exceeds 8,000 tokens.
 
+## Distribution
+
+For local repos, `cctx harvest` automatically:
+
+- **Writes `CONTEXT.md`** into each repo's root
+- **Adds `CONTEXT.md` to `.gitignore`** (creates the file if needed)
+- **Appends a reference to `CLAUDE.md`** so Claude Code reads the context at session start
+
+All three operations are idempotent — running harvest again won't duplicate entries.
+
 ## Agent Integration
 
-Wire `CONTEXT.md` into your agent by adding a pointer to your `CLAUDE.md` or `AGENTS.md`:
-
-```markdown
-## Workspace Context
-
-See CONTEXT.md for an overview of all active projects and pointers to deeper docs.
-Read it at the start of any session.
-```
-
-`cctx init` creates these stubs for you. Add `CONTEXT.md` to `.gitignore` — it's a generated local artifact.
+`cctx init` creates `CLAUDE.md` and `AGENTS.md` stubs that reference `CONTEXT.md`. For existing repos, `cctx harvest` appends the reference automatically. `CONTEXT.md` is a generated local artifact and should not be committed.
 
 ## GitHub Repos
 

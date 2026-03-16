@@ -39,6 +39,13 @@ def harvest_github(config: RepoConfig) -> HarvestedRepo:
             result.readme_intro = extract_readme_intro(resp.text)
             result.pointers.append(("README.md", "Project overview (this summary)"))
 
+        # Fetch CLAUDE.md
+        claude_url = _raw_url(owner, repo, ref, "CLAUDE.md")
+        resp = client.get(claude_url)
+        if resp.status_code == 200:
+            result.claude_md = resp.text.strip()
+            result.pointers.append(("CLAUDE.md", "Project instructions and conventions"))
+
         # Standard/full: try to list docs/
         if config.depth in ("standard", "full"):
             _fetch_docs_listing(client, owner, repo, ref, headers, result)

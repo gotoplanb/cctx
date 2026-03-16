@@ -57,6 +57,13 @@ def _render_repo(repo: HarvestedRepo) -> list[str]:
         lines.append(repo.readme_intro)
         lines.append("")
 
+    # CLAUDE.md
+    if repo.claude_md:
+        lines.append("### CLAUDE.md")
+        lines.append("")
+        lines.append(repo.claude_md)
+        lines.append("")
+
     # Pointers
     if repo.pointers:
         lines.append("### Pointers")

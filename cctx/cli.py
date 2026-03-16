@@ -102,6 +102,11 @@ def _do_harvest(config: Config, output_path: str) -> None:
     Path(output_path).write_text(content)
     console.print(f"[green]Wrote {output_path}[/green]")
 
+    # Distribute CONTEXT.md to each local repo
+    for repo_config in config.repos:
+        if repo_config.is_local:
+            _distribute_to_repo(repo_config, content)
+
     tokens = estimate_tokens(content)
     console.print(f"Estimated tokens: {tokens:,}")
     if tokens > 8000:
@@ -109,6 +114,52 @@ def _do_harvest(config: Config, output_path: str) -> None:
             "[yellow]Warning: Output exceeds 8,000 tokens. "
             "Consider reducing depth or number of repos.[/yellow]"
         )
+
+
+CONTEXT_REFERENCE = (
+    "\n## Workspace Context\n\n"
+    "Read CONTEXT.md at the start of each Claude Code session "
+    "for cross-project context.\n"
+)
+
+
+def _distribute_to_repo(repo_config: "RepoConfig", content: str) -> None:
+    """Write CONTEXT.md into a local repo, ensure gitignored, add CLAUDE.md reference."""
+    from cctx.config import RepoConfig  # noqa: F811
+
+    repo_path = Path(repo_config.path)  # type: ignore[arg-type]
+    if not repo_path.exists():
+        return
+
+    # Write CONTEXT.md
+    context_dest = repo_path / "CONTEXT.md"
+    context_dest.write_text(content)
+    console.print(f"  [dim]→ {repo_config.name}/CONTEXT.md[/dim]")
+
+    # Ensure CONTEXT.md is in .gitignore
+    gitignore = repo_path / ".gitignore"
+    if gitignore.exists():
+        gi_content = gitignore.read_text()
+        if "CONTEXT.md" not in gi_content:
+            with open(gitignore, "a") as f:
+                if not gi_content.endswith("\n"):
+                    f.write("\n")
+                f.write("CONTEXT.md\n")
+            console.print(f"  [dim]→ {repo_config.name}/.gitignore (added CONTEXT.md)[/dim]")
+    else:
+        gitignore.write_text("CONTEXT.md\n")
+        console.print(f"  [dim]→ {repo_config.name}/.gitignore (created)[/dim]")
+
+    # Add reference to CLAUDE.md if not already present
+    claude_md = repo_path / "CLAUDE.md"
+    if claude_md.exists():
+        claude_content = claude_md.read_text()
+        if "CONTEXT.md" not in claude_content:
+            with open(claude_md, "a") as f:
+                if not claude_content.endswith("\n"):
+                    f.write("\n")
+                f.write(CONTEXT_REFERENCE)
+            console.print(f"  [dim]→ {repo_config.name}/CLAUDE.md (added context reference)[/dim]")
 
 
 @cli.command()

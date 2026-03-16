@@ -17,16 +17,19 @@ Agentic context harvester — CLI that assembles docs from multiple repos into a
 ## Key Types
 
 - `Config` / `RepoConfig` — dataclasses in config.py, loaded from cctx.yaml
-- `HarvestedRepo` — dataclass in sources/local.py, output of harvest_local/harvest_github
+- `HarvestedRepo` — dataclass in sources/local.py, output of harvest_local/harvest_github (includes `claude_md` field)
 - `ExtractedDocstring` — dataclass in extractors/docstrings.py
 
 ## Data Flow
 
 ```
 cctx.yaml → Config → harvester.harvest_all() → [HarvestedRepo] → assembler.assemble() → CONTEXT.md
+                                                                                       → distribute to local repos
 ```
 
 Each repo goes through: source (local/github) → extractors (markdown/docstrings) → HarvestedRepo.
+
+After assembly, CONTEXT.md is written to each local repo's root, with .gitignore and CLAUDE.md updated as needed (idempotent).
 
 ## Commands
 

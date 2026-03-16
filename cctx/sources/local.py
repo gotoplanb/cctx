@@ -14,6 +14,7 @@ from cctx.extractors.docstrings import extract_docstrings, format_docstrings
 class HarvestedRepo:
     name: str
     readme_intro: str = ""
+    claude_md: str = ""
     language: str = ""
     entry_point: str = ""
     pointers: list[tuple[str, str]] = field(default_factory=list)
@@ -80,6 +81,12 @@ def harvest_local(config: RepoConfig) -> HarvestedRepo:
         content = readme_path.read_text(errors="replace")
         result.readme_intro = extract_readme_intro(content)
         result.pointers.append(("README.md", "Project overview (this summary)"))
+
+    # CLAUDE.md
+    claude_md_path = repo_path / "CLAUDE.md"
+    if claude_md_path.exists():
+        result.claude_md = claude_md_path.read_text(errors="replace").strip()
+        result.pointers.append(("CLAUDE.md", "Project instructions and conventions"))
 
     # Language and entry point detection
     result.language = detect_language(repo_path)

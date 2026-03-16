@@ -17,6 +17,9 @@ class TestHarvestGithub:
             200,
             text="# My Repo\n\nA great open source project.\n\n## Install\n\npip install it.",
         ))
+        respx.get(
+            "https://raw.githubusercontent.com/owner/repo/main/CLAUDE.md"
+        ).mock(return_value=httpx.Response(404))
 
         config = RepoConfig(name="repo", github="owner/repo", depth="readme")
         result = harvest_github(config)
@@ -30,6 +33,9 @@ class TestHarvestGithub:
         respx.get(
             "https://raw.githubusercontent.com/owner/repo/main/README.md"
         ).mock(return_value=httpx.Response(200, text="# Repo\n\nDescription.\n\n## More"))
+        respx.get(
+            "https://raw.githubusercontent.com/owner/repo/main/CLAUDE.md"
+        ).mock(return_value=httpx.Response(404))
 
         respx.get(
             "https://api.github.com/repos/owner/repo/contents/docs?ref=main"
@@ -61,6 +67,9 @@ class TestHarvestGithub:
         respx.get(
             "https://raw.githubusercontent.com/owner/repo/main/README.md"
         ).mock(return_value=httpx.Response(404))
+        respx.get(
+            "https://raw.githubusercontent.com/owner/repo/main/CLAUDE.md"
+        ).mock(return_value=httpx.Response(404))
 
         config = RepoConfig(name="repo", github="owner/repo", depth="readme")
         result = harvest_github(config)
@@ -73,6 +82,9 @@ class TestHarvestGithub:
         respx.get(
             "https://raw.githubusercontent.com/owner/repo/main/README.md"
         ).mock(return_value=httpx.Response(200, text="# Repo\n\nHi.\n\n## Next"))
+        respx.get(
+            "https://raw.githubusercontent.com/owner/repo/main/CLAUDE.md"
+        ).mock(return_value=httpx.Response(404))
 
         respx.get(
             "https://api.github.com/repos/owner/repo/contents/docs?ref=main"
@@ -91,6 +103,9 @@ class TestHarvestGithub:
         respx.get(
             "https://raw.githubusercontent.com/owner/repo/v2.0/README.md"
         ).mock(return_value=httpx.Response(200, text="# V2\n\nNew version.\n\n## What"))
+        respx.get(
+            "https://raw.githubusercontent.com/owner/repo/v2.0/CLAUDE.md"
+        ).mock(return_value=httpx.Response(404))
 
         config = RepoConfig(name="repo", github="owner/repo", depth="readme", ref="v2.0")
         result = harvest_github(config)
